@@ -5,16 +5,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.3.102.11" />
-    <PackageReference Include="CsvHelper" Version="12.1.2" />
-    <PackageReference Include="Hangfire" Version="1.7.3" />
-    <PackageReference Include="Hangfire.Mongo" Version="0.6.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.8.1" />
-    <PackageReference Include="System.Reactive" Version="4.2.0-preview.566" />
+    <Compile Remove="Jobs\**" />
+    <EmbeddedResource Remove="Jobs\**" />
+    <None Remove="Jobs\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Jobs\" />
+    <PackageReference Include="AWSSDK.S3" Version="3.3.102.11" />
+    <PackageReference Include="CsvHelper" Version="12.1.2" />
+    <PackageReference Include="Hangfire" Version="1.7.5" />
+    <PackageReference Include="Hangfire.Mongo" Version="0.6.1" />
+    <PackageReference Include="MongoDB.Bson" Version="2.9.0-beta2" />
+    <PackageReference Include="MongoDB.Driver" Version="2.9.0-beta2" />
+    <PackageReference Include="System.Reactive" Version="4.2.0-preview.566" />
   </ItemGroup>
 
 </Project>

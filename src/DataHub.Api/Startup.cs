@@ -1,15 +1,11 @@
-using Amazon;
-using Amazon.Extensions.NETCore.Setup;
-using Amazon.Runtime;
 using Amazon.S3;
-using DataHub.Core.Database;
+using DataHub.Core;
 using DataHub.Core.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MongoDB.Driver;
 
 namespace DataHub.Api
 {
@@ -25,23 +21,20 @@ namespace DataHub.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var mongoConnectionString = Configuration.GetConnectionString("Mongo");
+
             services.AddControllers()
                 .AddNewtonsoftJson();
 
-            services.AddAWSService<IAmazonS3>(new AWSOptions
-            {
-                Region = RegionEndpoint.APSoutheast1,
-                Credentials = new BasicAWSCredentials(Configuration["AWS:AccessKey"], Configuration["AWS:SecretKey"])
-            });
+            services.AddMvc();
+
+            services.AddAWSService<IAmazonS3>();
 
             services.AddSingleton<IFileServices, FileServices>();
-            services.AddTransient<IMongoDbContext>(serviceProvider =>
-            {
-                var mongoUrl = new MongoUrl(Configuration.GetConnectionString("Mongo"));
-                return new MongoDbContext(mongoUrl.Url, mongoUrl.DatabaseName);
-            });
 
             services.AddCors();
+
+            services.AddHangfireMongo(mongoConnectionString);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -2,6 +2,7 @@
 using Amazon.S3.Model;
 using CsvHelper;
 using DataHub.Core.Database;
+using DataHub.Core.Extensions;
 using Hangfire;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,15 +11,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using System.Reactive.Linq;
-using DataHub.Core.Extensions;
+using System.Threading.Tasks;
 
 namespace DataHub.Core.Services
 {
     public class FileServices : IFileServices
     {
         private const int BUFFER_SIZE = 5;
+        private const string BUCKET_NAME = "datahub69";
 
         private readonly IAmazonS3 _s3;
         private readonly IMongoDbContext _mongo;
@@ -35,7 +36,7 @@ namespace DataHub.Core.Services
 
             var response = await _s3.PutObjectAsync(new PutObjectRequest
             {
-                BucketName = "datahub69",
+                BucketName = BUCKET_NAME,
                 InputStream = stream,
                 Key = key,
             });
@@ -51,13 +52,30 @@ namespace DataHub.Core.Services
                 });
 
                 // Create job
-                //BackgroundJob.Enqueue(() => ProcessFile(key));
-                ProcessFile(key);               
+                BackgroundJob.Enqueue(() => ProcessFile(key));
             }
             else
             {
                 throw new Exception("Oops! We can not upload file to S3");
             }
+        }
+
+        public async Task<Stream> DownloadAsync(string key)
+        {
+            var response = await _s3.GetObjectAsync("datahub69", key);
+            using (var stream = response.ResponseStream)
+            {
+                var memory = new MemoryStream();
+                await stream.CopyToAsync(memory);
+
+                memory.Position = 0;
+                return memory;
+            }
+        }
+
+        public async Task<ListObjectsV2Response> GetListAsync(ListObjectsV2Request request)
+        {
+            return await _s3.ListObjectsV2Async(request);
         }
 
         public void ProcessFile(string key)
